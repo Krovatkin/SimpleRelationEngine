@@ -3,14 +3,14 @@ namespace Villedepommes
 {
 
     using Row = IList<string>;
-    interface Cursor
+    public interface Cursor
     {
         Row? next();
         void reset();
     };
 
 
-    class Table : Cursor
+    public class Table : Cursor
     {
         protected int pos = 0;
         protected IList<Row>? rows;
@@ -36,7 +36,7 @@ namespace Villedepommes
     };
 
 
-    class TablePeople : Table
+    public class TablePeople : Table
     {
 
         public TablePeople()
@@ -50,7 +50,7 @@ namespace Villedepommes
 
     };
 
-    class TableAges : Table
+    public class TableAges : Table
     {
         public TableAges()
         {
@@ -63,7 +63,7 @@ namespace Villedepommes
 
     };
 
-    class TableLastNames : Table
+    public class TableLastNames : Table
     {
         public TableLastNames()
         {
@@ -77,7 +77,7 @@ namespace Villedepommes
     };
 
 
-    class Join : Cursor
+    public class Join : Cursor
     {
 
         public Join(Cursor c1, Cursor c2)
