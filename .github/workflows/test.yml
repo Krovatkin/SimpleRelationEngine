@@ -25,4 +25,6 @@ jobs:
         cd ../tests
         dotnet build
     - name: Test with the dotnet CLI
-      run: dotnet test
+      run: |
+        cd tests
+        dotnet test
