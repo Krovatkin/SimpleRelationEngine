@@ -14,10 +14,11 @@ public class SqlEngineTests
         Assert.Equal("Nick", r[1]);
         r = tp.next();
         Assert.NotNull(r);
-        Assert.Equal("2", r[0]);
         Assert.Equal("Kelly", r[1]);
+        Assert.Equal("2", r[0]);
         tp.reset();
         Assert.NotNull(r);
+        r = tp.next();
         Assert.Equal("1", r[0]);
         Assert.Equal("Nick", r[1]);
         return;

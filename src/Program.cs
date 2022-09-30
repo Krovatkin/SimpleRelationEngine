@@ -76,12 +76,101 @@ namespace Villedepommes
 
     };
 
+    public interface Expression {
+        dynamic eval(IDictionary<string, dynamic> st);
+    }
+
+    public class Param: Expression {
+
+        public Param (string name) {
+            this.name = name;
+        }
+        public virtual dynamic eval(IDictionary<string, dynamic> st) {
+            return st[name];
+        }
+
+        protected string name;
+    }
+
+    public class BoolParam: Param {
+        public BoolParam(string name): base(name) {}
+        public override dynamic eval(IDictionary<string, dynamic> st) {
+            return (bool)st[name];
+            // var v = st[name];
+            // if (v is bool) {
+            //     return v;
+            // } else {
+            //     throw new InvalidCastException("Expected the value to be a bool");
+            // }
+        }
+    }
+
+    public abstract class BinaryExpression: Expression {
+
+        public BinaryExpression(Expression left, Expression right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        public abstract dynamic eval(IDictionary<string, dynamic> st);
+
+        protected Expression left;
+        protected Expression right;
+    }
+
+    public class And: BinaryExpression {
+
+        public And(Expression left, Expression right): base(left, right) {}
+        public override dynamic eval(IDictionary<string, dynamic> st) {
+            return (bool) left.eval(st) && (bool) right.eval(st);
+        }
+    }
+
+    public class Or: BinaryExpression {
+
+        public Or(Expression left, Expression right): base(left, right) {}
+        public override dynamic eval(IDictionary<string, dynamic> st) {
+            return (bool) left.eval(st) || (bool) right.eval(st);
+        }
+    }
+
+    public class Eq: BinaryExpression {
+
+        public Eq(Expression left, Expression right): base(left, right) {}
+        public override dynamic eval(IDictionary<string, dynamic> st) {
+            return (bool) left.eval(st) == (bool) right.eval(st);
+        }
+    }
+
+    public abstract class UnaryExpression: Expression {
+
+        public UnaryExpression(Expression inner) {
+            this.inner = inner;
+        }
+
+        public abstract dynamic eval(IDictionary<string, dynamic> st);
+
+        protected Expression inner;
+    }
+
+    public class Not: UnaryExpression {
+
+        public Not(Expression inner): base(inner) {}
+        public override dynamic eval(IDictionary<string, dynamic> st) {
+            return !(bool) inner.eval(st);
+        }
+    }
 
     public class Join : Cursor
     {
 
-        public Join(Cursor c1, Cursor c2)
+        static Expression defaultEquality = new Eq(new Param("left"), new Param("right"));
+
+        public Join(Cursor c1, Cursor c2, Expression? expr = null, string? leftName = null, string? rightName = null)
         {
+            this.expr = expr;
+            this.leftName = leftName;
+            this.rightName = rightName;
             cursor1 = c1;
             cursor2 = c2;
             r1 = cursor1.next();
@@ -101,7 +190,12 @@ namespace Villedepommes
                 var r2 = cursor2.next();
                 while (r2 != null)
                 {
-                    if (r1[0] == r2[0])
+                    var st = new Dictionary<string, dynamic>();
+
+                    st[leftName ?? "left"] = r1[0];
+                    st[rightName ?? "right"] = r2[0];
+
+                    if ((bool)defaultEquality.eval(st))
                     {
                         var result = new List<string>();
                         result.AddRange(r1);
@@ -120,6 +214,11 @@ namespace Villedepommes
         Row? r1;
         Cursor cursor1;
         Cursor cursor2;
+
+        Expression? expr;
+
+        string? leftName;
+        string? rightName;
     }
 
 
